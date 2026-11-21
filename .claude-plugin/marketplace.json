@@ -1,0 +1,14 @@
+{
+  "name": "aoi-skills",
+  "description": "Marketplace for the aoi-skills plugin: generic Arrow of Intent workflow skills.",
+  "owner": {
+    "name": "Anastasiia Rusina"
+  },
+  "plugins": [
+    {
+      "name": "aoi-skills",
+      "source": "./",
+      "description": "Generic Arrow of Intent workflow skills, namespaced as /aoi-skills:<skill>."
+    }
+  ]
+}
