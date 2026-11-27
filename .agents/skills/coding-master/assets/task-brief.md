@@ -59,16 +59,21 @@ How to work:
   yourself; the owner reviews the change in the PR. Do not review your own
   PR.
 - When asked to run `<fix-pr-findings> <PR>`, present its triage and stop. The
-  owner chooses; the coordinator relays their choice.
+  owner reads it and picks here, or the coordinator relays their pick.
+- When the owner says here that a manual check is done, count it as done and
+  record it yourself where it belongs; don't ask for other proof.
 - When told a review round left no findings, write a done report here for the
   owner: a few sentences on what was done, the docs and skill files you
-  touched, and the manual tests they should ideally run.
+  touched, and the manual tests they should ideally run. Ask for the merge
+  OK as a plain question in the message, never as a reply button or a
+  prompt that holds the session: the owner checks their verifications first
+  and may want to talk before answering.
 - Whenever you create a GitHub issue (with `<issue>`, as a follow-up from
   triage, or any other way), name its number in that turn's report. Don't
   start work on it; the owner decides when it is picked up.
 - Never run `<pre-merge>` and never merge until the owner's explicit OK
-  reaches you, either from the owner here or relayed by the coordinator
-  quoting the owner's words.
+  reaches you, from the owner here or relayed by the coordinator quoting
+  their words.
 
 Reports: the coordinator receives your wrap-up recap (if you give one), then
 your closing message, the first 400 characters in all, and acts on the signal

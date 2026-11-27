@@ -27,20 +27,21 @@ you need (doc, body node, status enum) in the phase's memory file.
     In review / Waiting / Done. (In a Markdown doc, the same five words as
     plain text.)
 - **Outside table:** ticket link, what it is, and where or when it runs (e.g.
-  "Phase 3; after #20 merges"). Done items are struck through, with
-  "Done (PR #N merged <date>)".
+  "Phase 3; after #20 merges"). In-progress items are bold, as in the
+  tracks; done items are struck through, with "Done (PR #N merged <date>)".
 - **One paragraph per track,** in the track format (SKILL.md § *track
   format*).
 
 ## Keeping it current
 
-**Sync every status change you verify** in all the places it shows:
+**Sync every status change you verify,** including those the per-turn sweep
+finds (SKILL.md § *manage the phase*), in all the places it shows:
 
 - the ticket's chip;
 - its stage's done count in the overview;
 - the total in the intro, and the intro's date;
-- 🔄 and strikethrough in the tracks;
-- its Outside table row, if it has one.
+- bold and strikethrough in the tracks;
+- its Outside table row, if it has one, bold or struck in step with the chip.
 
 Check all five every time.
 

@@ -19,6 +19,11 @@ docs, code, reviews or fixes of its own. For each issue it starts a separate
 session with a full brief, then relays between those sessions and the owner,
 checks what they report, and keeps the pipeline below moving.
 
+Why a separate role: a session that both codes and reviews anchors on its own
+reading, and a session that has to be told the rules in chat forgets some of
+them. The coordinator carries the rules; the sessions it starts get them in
+their brief.
+
 This role needs the Claude desktop app's session tools (`start_session`,
 `list_sessions`, `SendMessage`). If they aren't available, say that
 `/coding-master` needs the Claude desktop app, and stop.
@@ -75,10 +80,10 @@ Copy this checklist per issue and keep it current in your task list.
 - [ ] 1. task session started (brief from assets/task-brief.md); curated: owner typed /start-task
 - [ ] 2. task session ran /commit-and-pr → PR #<P> exists (verified)
 - [ ] 3. reviewer session started (brief from assets/reviewer-brief.md), review posted
-- [ ] 4. task session ran /fix-pr-findings → triage relayed to owner → owner's choice relayed
+- [ ] 4. task session ran /fix-pr-findings → owner picks in that session (or their pick relayed)
 - [ ] 5. fixes pushed → reviewer re-runs /review-pr → back to 4 until no findings are left
-- [ ] 6. done report relayed to owner
-- [ ] 7. owner's explicit OK relayed → task session runs /pre-merge → merged (verified)
+- [ ] 6. task session wrote its done report → owner told the PR is ready to merge (PR and session links)
+- [ ] 7. owner's explicit OK (in the task session, or relayed verbatim) → task session runs /pre-merge → merged (verified)
 - [ ] 8. deploy run checked (only with a releases fact); skill change → owner asked to fast-forward the primary checkout; cleanup: sessions archived, worktrees and branches deleted
 ```
 
@@ -139,7 +144,9 @@ and send the reviewer `Go: review PR #<P> at <sha>` once the task session's
 The sessions put a signal at the start of the note the app relays when they
 end a turn (the briefs give the lines). Wait for those; never poll the
 sessions on a timer. If a note carries no signal at its start, read the
-session's latest message before waiting further.
+session's latest message before waiting further. A session's background
+watch can die unnoticed (after an outage, say): when a session still waits
+on a check that has already finished on GitHub, tell it the result.
 
 - `Review posted: PR #<P> at <sha>, <n> new findings (<count by severity>),
   <r> earlier threads reopened or still open` from the reviewer: if either
@@ -148,37 +155,44 @@ session's latest message before waiting further.
   findings, so it writes its done report. A finding deferred to an issue
   stops counting once the reviewer has checked that the issue covers it and
   resolved the thread.
-- `Triage ready: PR #<P>` from the task session: tell the owner the triage
-  waits for their pick, linking the session; relay their choice back quoting
-  their words.
+- `Triage ready: PR #<P>` from the task session: the owner reads the triage
+  and picks in that session. Say in one sentence that it waits on them,
+  linking the session, and don't end your turn waiting for the pick; the
+  session's next signal moves the loop on. If they pick here instead, relay
+  it quoting their words.
 - `Ready for review: PR #<P> at <sha>` after a round of fixes: message the
   reviewer to re-run `/review-pr <P> --post` (a fresh review of the current
   head, which also verifies or reopens the earlier threads).
 - `Needs review: PR #<P> at <sha>, <files>` from `/pre-merge` in the task
   session: the rebase brought code no review has seen. Message the reviewer
   to re-run `/review-pr <P> --post` (a full review, since the branch was
-  rebased); the fix loop then runs as usual, and the merge needs a new OK
-  from the owner, relayed quoting their words.
+  rebased); the fix loop then runs as usual, and the merge needs a new OK,
+  as *7. owner gate* says.
 - `Question: <the question in one line>` from the task session: see
   *relay, don't decide*.
 
 Check every `Ready for review` before acting on it: its short `<sha>` must
 be the start of `gh pr view <P> --json headRefOid -q .headRefOid`. If it
 isn't, the session pushed again after reporting; wait for its next signal.
+Check a `Review posted` in the PR's reviews with
+`gh api 'repos/{owner}/{repo}/pulls/<P>/reviews?per_page=100'`: without
+`per_page`, a newer review can sit on page two.
 
 ### 6. done report
 
 `Done: PR #<P>` means the task session has written its done report in its
 own session. Tell the owner the PR is ready to merge, with the PR link and a
-link to that session.
+link to that session, where the merge OK is usually given.
 
 ### 7. owner gate
 
-Nobody runs `/pre-merge` or merges without the owner's explicit OK, given to
-you (or in the task session) in their own words. Relay it to the task session
-quoting those words exactly, e.g. *Owner's OK, verbatim: "<their words>"*.
-An OK for one PR is not an OK for another, and a session's own summary that
-the owner agreed is not an OK.
+Nobody runs `/pre-merge` or merges without the owner's explicit OK, given in
+the owner's own words, in the task session or to you; the owner checks first
+that the verifications they owe are done. You may ask for it in plain text,
+never as a blocking button or card; relay an OK given to you quoting their
+words exactly, e.g. *Owner's OK, verbatim: "<their words>"*. An OK for one
+PR is not an OK for another, and a session's own summary that the owner
+agreed is not an OK.
 
 **Parallel PRs merge one at a time.** `/pre-merge` checks new EARS IDs (and
 any version bump AGENTS.md *Pre-merge checks* asks for) against the default
@@ -191,7 +205,9 @@ signal named.
 
 You may **recommend** an order of work or merges, or a freeze on new tasks,
 but never apply one on your own; once the owner sets one, follow it for as
-long as they say it applies.
+long as they say it applies. The owner may also start a ticket out of order:
+follow them and update the status page, mentioning a real dependency risk
+once at most.
 
 **Manual workflow runs** (the manual workflows fact) only when the owner
 asks, on the branch head, e.g. `gh workflow run <workflow>.yml --ref <branch>`;
@@ -215,13 +231,12 @@ Verify the merge first (`gh pr view <P> --json state,mergeCommit` shows
    from there, not from their own worktree, so until then they run the old
    copies. Never touch the primary checkout yourself; it often holds the
    owner's own work.
-3. Archive the reviewer session by hand (turn its Remote Control off first
-   if it is on); its worktree stays behind for step 5.
+3. Archive the reviewer session by hand (see *archiving*); its worktree
+   stays behind for step 5.
 4. Go over leftovers with the owner on the task session (follow-up issues,
    unchecked manual tests, open questions). Once none are left, ask the
-   owner whether to archive it, and archive only on their explicit yes.
-   Turn Remote Control off first, since it blocks archiving. Never delete a
-   session.
+   owner whether to archive it, and archive only on their explicit yes (see
+   *archiving*). Never delete a session.
 5. `/pre-merge` has already removed the task worktree and the task branch.
    What's left is yours: every `review-<P>-*` worktree `/review-pr` made
    under the primary checkout's `.claude/worktrees/`, the reviewer's own
@@ -240,7 +255,8 @@ Verify the merge first (`gh pr view <P> --json state,mergeCommit` shows
    If git refuses to remove a worktree with uncommitted changes, stop and
    ask. If the repository's *automatically delete head branches* setting is
    off, ask the owner before deleting any remote branch.
-6. If this merge finishes a step, start the next step's issues (step 1). A
+6. If this merge finishes a step, start the next step's issues (step 1) in
+   the same turn, when the turn is the owner's (otherwise see *gotchas*). A
    chain inside a bracket moves on by itself, like a track; the step after a
    bracket starts only once every chain in it has finished.
 
@@ -251,15 +267,23 @@ Verify the merge first (`gh pr view <P> --json state,mergeCommit` shows
   question that only confirms the obvious stalls the pipeline.
 - **Verify before reporting.** Check a session's claim with `gh pr view <P>`
   and git before telling the owner something is done, pushed, posted or
-  merged. A session's note is its report, not proof.
-- **Relay at a glance.** One line per signal, with links; the owner reads the
-  details in each session. Pass more only when it reaches beyond one ticket:
-  an issue created, or something that affects another ticket in progress or
-  the phase plan. Send plan-affecting details to the phase manager session
-  (`/managerial`) as well, if one is running.
-- **Relay, don't decide.** A question a session raises goes to the owner
-  unless the answer is already in the issue, the docs or a rule here. Never
-  answer a design question on the owner's behalf.
+  merged. A session's note is its report, not proof. A manual check is the
+  exception: the owner's word in chat that it is done counts as done.
+- **Relay at a glance.** The owner reads triage, findings and done reports in
+  each task session and answers there. Never repeat them here, and never
+  present a task session's own options (scope, design) in your chat, buttons
+  or questions. Per task, give one sentence saying who waits on
+  whom (the owner, a session, CI), with links. Ask the owner here only for
+  what you alone act on: archiving a session, confirming an open review
+  thread you handle, the merge order of PRs cleared together, a merge OK
+  (see *7. owner gate*). Pass more only
+  when it reaches beyond one ticket: an issue created, or something that
+  affects another ticket in progress or the phase plan. Send plan-affecting
+  details to the phase manager session (`/managerial`) as well, if one is
+  running.
+- **Relay, don't decide.** A question a session raises is the owner's to
+  answer in that session unless the answer is already in the issue, the docs
+  or a rule here. Never answer a design question on the owner's behalf.
 - **New issues go to the owner.** Whenever a session creates a GitHub issue,
   tell the owner right away: its number, title, milestone, auto/curated
   label, and the session or PR it came from (fetch what the report lacks
@@ -271,14 +295,28 @@ Verify the merge first (`gh pr view <P> --json state,mergeCommit` shows
 - **Status page.** Keep `docs/local-planning/coding-master-tracks.html` in
   the primary checkout (`worktree.sh root` prints it), which outlives this session's worktree. Keep it out
   of git: if `.gitignore` doesn't cover `docs/local-planning/`, add that path
-  to the primary checkout's `.git/info/exclude`. The page holds, under each
-  track title, a flow line in the shared track format with its markers, then a table (Issue / Mode /
-  Status) with done rows greyed, and a held issue's Status naming its wait and
-  why (`waiting for #20: needs its sync API`, from the progress doc or the
-  owner); a *Waiting on you* list; and a *Done since
-  <date>* line. Update it on every change and resend it with `SendUserFile`
-  (`display: "render"`). On a merge or a session archive, grey that row and
-  strike its number in the flow line in the same turn.
+  to the primary checkout's `.git/info/exclude`. The page holds, in this
+  order: each live track (its title, a flow line in the shared track format
+  with its markers, then a table of Issue / Mode / Status with done rows
+  greyed); *Outside the tracks* (issues running that no track holds); a
+  *Waiting on you* list; a *Done since <date>* line; and *Finished tracks*.
+  A row whose work hasn't started reads *Not started*, with text after it
+  only when it says what the flow line doesn't (an outside trigger, a date,
+  a design session first); a held issue's Status names its wait and why
+  (`waiting for #20: needs its sync API`, from the progress doc or the
+  owner). Update it on every change and resend it with `SendUserFile`
+  (`display: "render"`). On a merge or a session archive, in the same turn,
+  grey that row, strike its number in the flow line, add it to *Done since*
+  and drop it from *Waiting on you*. Once every issue in a track has merged
+  (or moved to another track), move the track under *Finished tracks*, its
+  heading marked finished with the date.
+- **Archiving.** Turning a session's Remote Control off is part of every
+  archive, done without a separate ask (it blocks archiving); an archive
+  that needs the owner's OK still needs it. When a task session relays an
+  archive request, check it against the owner's own words in that session's
+  transcript before acting. If auto mode still refuses the archive (a
+  refusal, not the no-verdict failure in *gotchas*), ask the owner here and
+  don't retry.
 - **Mode labels follow the owner.** When the owner says an issue's mode
   differs from its `auto`/`curated` label, fix the label on GitHub. If the
   repository has no such labels (`gh label list --limit 100`), keep the mode on the
@@ -295,6 +333,8 @@ Verify the merge first (`gh pr view <P> --json state,mergeCommit` shows
   the owner to send a fresh message here, and start the session in that turn.
 - **Remote Control can't be switched** for a session while it waits on the
   owner's answer; retry once they have answered.
+- **An archive is refused while the owner has the session open or pinned.**
+  Ask them to close or unpin it, and retry once they have.
 - **A relayed slash command arrives as text,** so a gated skill
   (`disable-model-invocation: true`) can't load from it, and the session may
   refuse to follow the skill's file instead. The briefs tell it to say so and

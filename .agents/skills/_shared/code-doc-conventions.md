@@ -21,7 +21,8 @@ where a doc comment is meant.
 - Doc comments go only on public API whose contract is non-obvious: what a
   caller must pass, what comes back in each case, what it guarantees or
   refuses.
-- Open with one summary sentence that states the contract.
+- Open with one summary sentence that states the contract, in the voice the
+  language's own doc guide uses (Dart's is third person: "Returns …").
 - Document parameters and return values as short fragments, with no
   trailing period on a fragment.
 - Mark identifiers the way the language's doc tool links them, so renamed

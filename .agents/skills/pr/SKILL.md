@@ -1,6 +1,6 @@
 ---
 name: pr
-description: "Open a pull request from the current branch's pushed commits: writes the title and a body with what changed, the issue links (Closes, or Ref when an acceptance criterion is unmet), the specs it implements and a testing checklist, then adds existing labels and assigns it. Use when commits are pushed and need a PR: 'open a PR', 'raise a pull request', or the second half of /commit-and-pr. Not for committing (/commit) or reviewing a PR (/review-pr). Generic copy: if a project skill named `pr` is also listed, use that one instead."
+description: "Open a pull request from the current branch's pushed commits: writes the title and a body with what changed, the issue links (Closes, or Ref when an acceptance criterion is unmet), the specs it implements and a testing checklist, then adds existing labels and assigns it; --draft opens it as a draft. Use when commits are pushed and need a PR: 'open a PR', 'raise a pull request', or the second half of /commit-and-pr. Not for committing (/commit) or reviewing a PR (/review-pr). Generic copy: if a project skill named `pr` is also listed, use that one instead."
 model: haiku
 allowed-tools:
   - Bash(git diff *)
@@ -20,7 +20,7 @@ allowed-tools:
   - Bash(${CLAUDE_SKILL_DIR}/../_shared/scripts/spec-ids.sh *)
 ---
 
-You synthesise this branch's commits into a clear pull request, so the developer writes no boilerplate.
+You synthesize this branch's commits into a clear pull request, so the developer writes no boilerplate.
 
 > After the PR is open, use `/review-pr` for code review and `/pre-merge` for thread triage before merging.
 
@@ -42,6 +42,14 @@ its rule from there.
 | skill names | *shared* |
 | assets | *shared* |
 <!-- facts:end -->
+
+## invocation
+
+```
+/pr [--draft]
+```
+
+`--draft` opens the PR as a draft, so the developer decides when it is ready for others.
 
 ## setup
 
@@ -69,7 +77,7 @@ If the file exists and has content, use it as the PR body template in step 7 ins
    ```
    Extract every `[#N]` issue reference from commit subjects.
 
-2. **Title:** single commit → use the commit subject verbatim (it already carries `[#N] type:`). Multiple commits → synthesise the theme with format `[#N] type: <theme>` where N and type come from the branch name (`feature-42/...` → `[#42]`, branch prefix `feature` → `feat`). If commits reference multiple issues, list all: `[#12][#13] feat: ...`. Max 72 chars.
+2. **Title:** single commit → use the commit subject verbatim (it already carries `[#N] type:`). Multiple commits → synthesize the theme with format `[#N] type: <theme>` where N and type come from the branch name (`feature-42/...` → `[#42]`, branch prefix `feature` → `feat`). If commits reference multiple issues, list all: `[#12][#13] feat: ...`. Max 72 chars.
 
 3. **`## What changed:`** group by concern — not one bullet per commit:
 
@@ -113,7 +121,7 @@ If the file exists and has content, use it as the PR body template in step 7 ins
 
 6. **`## Testing:`** build this section as [assets/testing-checklist.md](assets/testing-checklist.md) describes, adding the *Testing checklist* lines of each loaded asset that apply to the diff.
 
-7. **Create** — write the body to a fresh `mktemp` file (never a fixed `/tmp` name) and create and assign the PR in the same call, so the file is removed even when `gh` fails:
+7. **Create** — write the body to a fresh `mktemp` file (never a fixed `/tmp` name) and create and assign the PR in the same call, so the file is removed even when `gh` fails. With `--draft`, add `--draft` to `gh pr create`:
    ```bash
    body=$(mktemp) && trap 'rm -f "$body"' EXIT
    cat > "$body" <<'PR_BODY'

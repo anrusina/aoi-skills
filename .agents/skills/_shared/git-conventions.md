@@ -19,7 +19,8 @@ plus any prefix a loaded asset's *Commit message* section adds.
 characters. `[#N]` is the issue number from the branch name
 (`<prefix>-42/...` → `[#42]`), left out when the branch has none; a commit
 that unavoidably covers several issues lists them all
-(`[#12][#13] feat: ...`). The type is one of these, plus any a loaded asset's
+(`[#12][#13] feat: ...`), and a `/pre-merge` commit for a concern with its
+own issue carries that issue instead. The type is one of these, plus any a loaded asset's
 *Commit message* section adds:
 
 | Type | When |

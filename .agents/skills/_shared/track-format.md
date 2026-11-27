@@ -27,11 +27,14 @@ The progress doc, and the coordinator's status page, add markers to the same
 notation:
 
 ```
-Track A: ~~#12~~ -> 🔄#15 -> [#17 -> #18, #19] -> ⏸ Wait for #20 -> 👤#22
+Track A: ~~#12~~ -> **#15** -> [#17 -> #18, #19] -> ⏸ Wait for #20 -> 👤#22
 ```
 
+- `**…**`: in progress, in bold from the day work starts; struck through
+  instead once done. On a page that takes links, the bold item links to its
+  PR; on the coordinator's status page, to its task session until a PR
+  exists.
 - `~~…~~`: done, struck through; the arrows aren't.
-- 🔄 prefix: in progress. Dropped once the item is struck.
 - `⏸ Wait for #N`: a step of its own that holds the track until #N
   merges; it doesn't start #N. Why it waits goes in the held ticket's table
   row, not in the track.
@@ -41,5 +44,5 @@ Track A: ~~#12~~ -> 🔄#15 -> [#17 -> #18, #19] -> ⏸ Wait for #20 -> 👤#22
 
 ## Reading a track
 
-Skip struck-out items, ignore the 🔄 and 👤 markers (the mode comes from the
-issue's label), and treat `⏸ Wait for #N` as a hold until #N merges.
+Skip struck-out items, ignore bold, links and the 👤 marker (the mode comes
+from the issue's label), and treat `⏸ Wait for #N` as a hold until #N merges.
