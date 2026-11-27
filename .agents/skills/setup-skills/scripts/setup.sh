@@ -92,10 +92,15 @@ pget() {
     {
       line = $0
       match(line, /^ */); ind = RLENGTH
+      # A blank line has no indent of its own, so it never ends a block, a
+      # list or the facts section: a block keeps it (unless trailing), the
+      # rest skip it.
       if (mode == "block") {
-        if (ind > keyind || trim(line) == "") { emit(substr(line, keyind + 3)); next }
+        if (trim(line) == "") { blanks++; next }
+        if (ind > keyind) { for (; blanks > 0; blanks--) print ""; emit(substr(line, keyind + 3)); next }
         exit
       }
+      if (trim(line) == "") next
       if (mode == "list") {
         if (ind > keyind && trim(line) ~ /^- /) { v = trim(line); emit(unquote(trim(substr(v, 3)))); next }
         exit
@@ -208,6 +213,24 @@ present_assets() {
   done
 }
 
+# allowed_entry <command> <wrapper> <wrapped tools>: the allowed-tools line
+# for a gate, format-fix or setup command, written as the agent will run it.
+# A trailing "# ..." note is dropped. The wrapper goes in front only when the
+# command's first word is a tool the wrapper provides; anything else (a make
+# target whose recipe calls the wrapper itself, the wrapper's own tool, a
+# command that already carries the wrapper) runs as written.
+allowed_entry() {
+  local cmd=$1 wrapper=$2 tools=$3 first
+  cmd=$(printf '%s' "$cmd" | sed 's/[[:space:]][[:space:]]*#.*$//; s/[[:space:]]*$//')
+  [ -n "$cmd" ] || return 0
+  first=${cmd%% *}
+  if [ -n "$wrapper" ] && has_line "$(printf '%s\n' $tools)" "$first"; then
+    echo "  - Bash($wrapper $cmd)"
+  else
+    echo "  - Bash($cmd)"
+  fi
+}
+
 # render_skill_md <profile> <skill> <generic SKILL.md> <current SKILL.md>:
 # the current file with its block, description and allowed-tools re-rendered.
 render_skill_md() {
@@ -223,7 +246,7 @@ render_skill_md() {
       pget "$profile" "$key" facts | while IFS= read -r cmd; do
         [ -n "$cmd" ] && [ "$cmd" != none ] || continue
         [ "${cmd#none }" = "$cmd" ] || continue
-        echo "  - Bash(${wrapper:+$wrapper }$cmd)"
+        allowed_entry "$cmd" "$wrapper" "$tools"
       done
     done
     if [ -n "$wrapper" ]; then

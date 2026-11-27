@@ -116,7 +116,10 @@ wider than the skills' own rules:
   the tool-version file: a `mise.toml` or `.mise.toml` means `mise exec --`
   unless AGENTS.md says otherwise. **Wrapped tools**: the tools that config
   file lists (`gh`, `node`, `flutter` …); they go in the profile's
-  `wrapped-tools`.
+  `wrapped-tools`. The render puts the wrapper in front of a gate,
+  format-fix or setup command only when its first word is one of them, so a
+  command the project runs bare (a `make` target whose recipe calls the
+  wrapper) needs no marker: write each command as AGENTS.md gives it.
 - gates: AGENTS.md's build section. When it lists both separate commands and
   one command that runs them all (a `make check`), the gates fact is the one
   command; read the Makefile or task runner to confirm what it runs.
@@ -295,7 +298,7 @@ folder without `_shared`, link it as install step 4.3 does.
 profile, print each upstream file with `setup.sh render-file` into a
 `mktemp -d` folder (never `render`, which replaces `.agents/skills/<skill>/`),
 and show `git diff --no-index <project skill> <rendered skill>` skill by
-skill, summarising what upstream changed. Apply only what the developer
+skill, summarizing what upstream changed. Apply only what the developer
 picks, by editing the project's file; never overwrite it whole.
 
 ## connect, disconnect
