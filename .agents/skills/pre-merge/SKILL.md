@@ -42,7 +42,7 @@ its rule from there.
 | gates | *shared* |
 | setup | *shared* |
 | build-input docs | *shared* |
-| pre-merge checks | AGENTS.md *Pre-merge checks*: the checks run only before a merge (local suites and their fixture folders, checks the developer runs by hand, a CI-equivalent workflow, a version bump with its command and the files it writes, release notes), or none (skip the steps that need it) |
+| pre-merge checks | AGENTS.md *Pre-merge checks*: the checks run only before a merge (local suites and their fixture folders, checks the developer runs by hand, a workflow that starts by itself when certain paths change, a CI-equivalent workflow, a version bump with its command, the files it writes and any rule for its level, release notes), or none (skip the steps that need it) |
 | releases | AGENTS.md *Releases*: whether releases are tagged, and the tag pattern, or none (skip the steps that need it) |
 | skill names | *shared* |
 | assets | *shared* |
@@ -198,44 +198,59 @@ in AGENTS.md` and go on. Otherwise read
 [references/pre-merge-checks.md](references/pre-merge-checks.md) and run
 every check the fact lists, as it describes: conditional checks, local
 suites and their fixtures, checks the developer runs by hand, the version
-bump, and the CI-equivalent run (started at the end of phase 2).
+bump, and the workflows checked after phase 2's push (one that started by
+itself, the CI-equivalent run).
 
 ## phase 2 — rebuild the branch's commits and push
 
 This runs before any comment or reply is posted, so the summary comment
 names the final commits.
 
-A branch merges as **documentation first, implementation second**, never one
-squashed commit where both exist. List what goes in:
+A branch merges as **documentation first, implementation second** for each
+concern it holds, never one squashed commit where both exist. List what goes
+in:
 
 ```bash
 git log origin/<base>..HEAD --format="%h %s%n%n%b"
 git diff --name-only origin/<base>..HEAD
 ```
 
-The **documentation** bucket takes everything under `docs/`, plus whatever a
-loaded asset's *Rebuild* section assigns to it (typically a design token or
-localization key a doc introduces outside `docs/`), minus what a *Rebuild*
-section sends to the implementation bucket. The **implementation** bucket
-takes everything else.
+A **concern** is a fix to a different subsystem; most branches hold one.
+Group the changes by concern, from the commits and the issues they name, in
+the order each concern's work was first committed. A review-fix commit joins
+the concern it fixed; the version bump and any other phase 1b commit join
+the main issue's concern. A file changed for two concerns whose changes
+can't be split cleanly goes in the first commit delivered.
 
-If the branch already has that shape (one docs commit then one
-implementation commit, or just the one its buckets call for), skip the
-rebuild and push as below.
+Within a concern, the **documentation** bucket takes everything under
+`docs/`, plus whatever a loaded asset's *Rebuild* section assigns to it
+(typically a design token or localization key a doc introduces outside
+`docs/`), minus what a *Rebuild* section sends to the implementation bucket.
+The **implementation** bucket takes everything else. A concern with no code
+(every path Markdown or under `docs/`, `.agents/` or `.claude/`, none a build
+input by the *build-input docs* fact) is one commit instead. So a single
+concern stays at one docs commit then one implementation commit, and two
+concerns become docs A, code A, docs B, code B.
 
-Otherwise compose one message per non-empty bucket, in the format of
-[../_shared/git-conventions.md](../_shared/git-conventions.md): type `docs` for the docs commit (its subject says what the specs now
-say) and `fix`, `feat` or `chore` for the implementation commit (what the
-code now does). Synthesise the bullets across the commits folded in, grouped
-by concern; put `@spec` IDs on the implementation commit, each renumbered
-identifier in its own bullet, and apply any message rule in a loaded asset's
-*Rebuild* section.
+If the branch already has that shape, skip the rebuild and push as below.
 
-Invoking `/pre-merge` approves the wording; show each message in the
-report, and reword before merging if the developer asks. Rebuild in one
-call, with the messages in `mktemp` files so their backticks stay literal
-(drop a `--docs-msg` or `--impl-msg` whose bucket is empty, and add
-`--to-docs <path>` / `--to-impl <path>` for each *Rebuild* assignment):
+Otherwise compose one message per commit, in the format of
+[../_shared/git-conventions.md](../_shared/git-conventions.md): type `docs` for a docs commit (its subject says what the specs now
+say), `fix`, `feat` or `chore` for an implementation commit (what the code
+now does), and `docs` (or `chore` for skill tooling alone) for a no-code
+concern's commit. Each commit's `[#N]` is its concern's own issue when it has
+one, the main issue otherwise. Synthesize the bullets across the commits
+folded in; put a concern's `@spec` IDs on its implementation commit, each
+renumbered identifier in its own bullet; say in a bullet when the commit
+holds a file another concern changed too; and apply any message rule in a
+loaded asset's *Rebuild* section.
+
+Invoking `/pre-merge` approves the wording and the grouping; show each
+message in the report, and reword or regroup before merging if the developer
+asks. Rebuild in one call, with the messages in `mktemp` files so their
+backticks stay literal (drop a `--docs-msg` or `--impl-msg` whose bucket is
+empty, use `--msg` alone for a no-code concern, and add `--to-docs <path>` /
+`--to-impl <path>` for each *Rebuild* assignment). For one concern:
 
 ```bash
 docs=$(mktemp); impl=$(mktemp)
@@ -247,6 +262,17 @@ cat > "$impl" <<'MSG_EOF'
 MSG_EOF
 ${CLAUDE_SKILL_DIR}/scripts/rebuild.sh --wrap '<wrapper>' <base> --docs-msg "$docs" --impl-msg "$impl"
 rm -f "$docs" "$impl"
+```
+
+For more than one concern, give each a `--concern` group in commit order,
+with its messages and a `--path` for each file or folder it holds; the main
+issue's concern gives `--rest` (or no `--path`) and takes every file no
+`--path` names. A shared file goes to the first concern that lists it:
+
+```bash
+${CLAUDE_SKILL_DIR}/scripts/rebuild.sh --wrap '<wrapper>' <base> \
+  --concern --docs-msg "$docs_a" --impl-msg "$impl_a" \
+  --concern --path <path> --path <path> --docs-msg "$docs_b" --impl-msg "$impl_b"
 ```
 
 It resets onto `origin/<base>`, commits each non-empty bucket (only files
@@ -271,22 +297,23 @@ shell limits long commands:
 ${CLAUDE_SKILL_DIR}/scripts/ci-run.sh --wrap '<wrapper>' <workflow file>
 ```
 
-and judge its conclusion as the reference says.
+and judge its conclusion, and the run of any workflow that started by
+itself, as the reference says.
 
 Last, before any reply: if the default branch has moved (`git fetch
 origin`, then `git merge-base --is-ancestor origin/<base> HEAD` fails), go
 back to phase 1a: the ID checks and a version bump hold only against the
 default branch they ran on.
 
-**Unreviewed code in a coordinated run.** When the OK reached this run
-relayed by a coordinator session, and a hand-blended conflict or a gate fix
-changed production source code (the source tree AGENTS.md's
+**Unreviewed code in a coordinated run.** When a coordinator started this
+session (its brief says "A coordinator session started you"), and a
+hand-blended conflict or a gate fix changed production source code (the source tree AGENTS.md's
 project-structure section names), no review has seen that code. Stop here,
 before any comment, reply or issue, and begin the closing message with
 `Needs review: PR #<N> at <short pushed-sha>, <files>`. The coordinator
 starts a review round, and `/pre-merge` runs again on the developer's next
-OK. In a run the developer started here, carry on: the *Conflicts* row shows
-it before the merge question.
+OK. In a session no coordinator started, carry on: the *Conflicts* row
+shows it before the merge question.
 
 ## phase 3 — post the summary comment and answers
 
@@ -344,7 +371,8 @@ EARS spec IDs:        no duplicates (<renumbered IDs as old → new, or "none re
 <one row per loaded asset's Summary section>
 Quality gates:        <passed | skipped — documentation only>
 Pre-merge checks:     <one line per check: name and result (passed, skipped — reason, not run — reason) | none recorded in AGENTS.md>
-Version:              <old> → <new> (<level>) | no version bump recorded
+Version:              <old> → <new> (<level>) | none: documentation only | no version bump recorded
+Commits:              <one line per final commit, in order: its subject, and with more than one concern the paths it holds>
 ```
 
 Never merge while a gate or a pre-merge check is failing, or, when the fact

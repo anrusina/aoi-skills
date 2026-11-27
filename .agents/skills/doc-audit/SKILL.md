@@ -7,6 +7,8 @@ allowed-tools:
 
 You audit docs for accuracy against the Arrow of Intent chain (HLD → LLDs → EARS specs → Tests → Code) and report broken, stale and missing documentation.
 
+Read the project's `AGENTS.md` first. Where it states its own documentation or Arrow of Intent rules (project structure, LLD altitude, error handling, telemetry signals, spec format), they decide the checks below; these checks are the default where it says nothing. Find each section by what it holds, not its exact title.
+
 ## Project facts
 
 <!-- facts:begin -->

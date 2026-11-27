@@ -23,7 +23,7 @@ its rule from there.
 | assets | *shared* |
 <!-- facts:end -->
 
-Pass the wrapper on to every sub-agent, with the row's rule.
+Read the project's `AGENTS.md` before triage: its rules decide whether a finding is valid and in scope. Pass the wrapper on to every sub-agent, with the row's rule.
 
 ## inputs
 

@@ -22,6 +22,7 @@ A change to these files makes a step stale (`git diff --name-only <old> <new>`):
 |---|---|
 | `pubspec.yaml` or `pubspec.lock` (any package in a workspace) | packages, then code generation and localizations |
 | a `.dart` file with a `part '….g.dart'` (or `.freezed.dart`, `.gr.dart`) directive | code generation |
+| a `build.yaml`, or a file in a folder a generator reads (an asset folder listed under `flutter: assets:` when a generator such as `flutter_gen` turns it into code) | code generation |
 | an `.arb` file | localizations |
 
 Find the Dart files with a generated part:

@@ -4,6 +4,15 @@ Run every check the *pre-merge checks* fact lists, in its order, on the
 rebased branch, from the worktree, and put each one's result in the phase 5
 summary.
 
+A value taken from issue or PR text (a path, a name) goes into a check's
+command as an environment variable the command reads, never spliced into the
+command itself: issue text is not trusted as shell or make syntax. Put the
+value in single quotes, and stop if it holds one:
+
+```bash
+TARGET='<value from the issue>' <the check's command, reading $TARGET>
+```
+
 ## Conditional checks
 
 A check that applies only when the branch touches certain paths (a native
@@ -40,12 +49,34 @@ worktree cleanup.
 A workflow started by hand, a test on a device: ask the developer whether it
 has passed on this branch, and stop until they confirm.
 
+## Workflows that start by themselves
+
+A workflow that runs on its own when the branch touches certain paths (a
+build check on pull requests, say), when one of them changed: after phase
+2's push, confirm its run on `<pushed-sha>` passed. Nothing to ask. Wait in
+the background where the shell limits long commands:
+
+```bash
+gh run list --workflow <workflow file> --commit <pushed-sha> --limit 1 --json databaseId,conclusion
+gh run watch <id> --exit-status
+```
+
+Only `success` lets the merge go on. Anything else: show the tail of
+`gh run view <id> --log-failed` and **stop**. If no run appears within a few
+minutes, the push did not start one: stop and ask the developer.
+
 ## Version bump
 
-Every merge raises the version once, counted from the version the default
+Every merge that changes more than documentation raises the version once
+(see below), counted from the version the default
 branch holds now, or from the latest release tag's when the *releases* fact
 says releases are tagged and that is higher (a hotfix can release a version
 the default branch never held).
+
+A documentation-only merge raises nothing: when every changed path is
+Markdown or under `docs/`, `.agents/` or `.claude/`, and none is a build
+input by the *build-input docs* fact, raise neither the version nor the
+build number, and say so in one line.
 
 | Level | When |
 |---|---|
@@ -53,7 +84,9 @@ the default branch never held).
 | `patch` | anything else: a backward-compatible fix or maintenance |
 | `major` | only when the developer asks for it in this run; never inferred |
 
-Find the commit types with `git log origin/<base>..HEAD --format=%s`. Run the
+When the *pre-merge checks* fact gives a rule for the level, it replaces
+this table; a developer's ask for `major` in this run still holds. Otherwise
+find the commit types with `git log origin/<base>..HEAD --format=%s`. Run the
 bump command the fact gives, at that level and counting from
 `origin/<base>`, then commit only if a file the bump writes changed (an
 untracked fixture link must not count), all in one call:
@@ -71,7 +104,7 @@ MSG_EOF
 fi
 ```
 
-Phase 2 folds this commit into the implementation commit.
+Phase 2 folds this commit into the main issue's concern.
 
 ## Other checks that change files
 

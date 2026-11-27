@@ -153,6 +153,14 @@ that only matches facts verified this way needs no go-ahead; load
 [references/progress-doc.md](references/progress-doc.md) for every place a
 status change lands.
 
+**Sweep on every turn that touches the progress doc,** not only at session
+start, and don't wait for the owner to report merges. Rerun the merged-PR
+and open-PR queries from *start of every session* (`<date>`: the doc's intro
+date), then look up every open item in the stage tables and the Outside
+table on its own, whatever the queries' date range, so a merge an earlier
+sync missed is still found: an issue now closed by a merged PR is done, and
+one with an open PR is in review. Verify each change as above and sync all of them in the same turn.
+
 **Place new tickets.** When the owner files one, read it, decide where it
 goes (a stage, a track step, an Outside row, a later phase, or the backlog),
 apply it, and tell the owner, showing the track steps before and after it if
@@ -207,7 +215,7 @@ body holds. If a title misleads, propose renaming it.
 - When two tickets overlap, comment on each so the sessions working them know
   about the other.
 - Research findings go onto the ticket each one informs. Say when a
-  comparison is self-published by a competitor, and note licence limits on
+  comparison is self-published by a competitor, and note license limits on
   data that is for reference only.
 
 **Housekeeping on request** (e.g. stale worktrees and branches): list what's
@@ -253,7 +261,7 @@ exactly: the owner copies tracks out of the progress doc and passes them to
   are cheap to change). After surfacing findings or a proposal, end the
   turn.
 - **The track order is advice, not a schedule.** The owner sometimes starts
-  tickets out of order. When one starts early, just sync 🔄 and its chip.
+  tickets out of order. When one starts early, just make it bold and sync its chip.
   Raise a real dependency risk at most once, and reorder a track only when
   asked.
 - **Reports in plain lines, not tables.** Reports get pasted into other

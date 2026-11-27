@@ -3,7 +3,7 @@
 `/review-pr` step 6 applies every check below to the changed code. They are
 language-neutral failure classes; each stack's own checks live in the
 *Review checks* section of `assets/stack/<id>.md`, project rules in
-`AGENTS.md`, and product concerns (accessibility, localisation, theming) in
+`AGENTS.md`, and product concerns (accessibility, localization, theming) in
 the field assets. A check belongs here only when it follows from programming
 in general, and is concrete enough to point at a line that breaks it.
 
@@ -26,7 +26,7 @@ Skip this section when the change has no UI code.
   non-trivial computation inside a render/build function, or allocation that
   happens on every frame or every re-render
 - Re-renders broader than the change needs: state held too high in the tree,
-  a whole view subscribed to a store when it reads one field, a memoisation
+  a whole view subscribed to a store when it reads one field, a memoization
   or constant-construction opportunity the framework offers and the code
   forgoes
 - Work started in a render function rather than in the lifecycle hook or
@@ -35,7 +35,7 @@ Skip this section when the change has no UI code.
 ## Concurrency and async
 
 - Shared mutable state touched from more than one task, thread or isolate
-  without the synchronisation the language provides
+  without the synchronization the language provides
 - A check-then-act sequence across an `await` (or other suspension point)
   whose condition can change before the act runs — a reload, a cancelled
   operation, a second caller
@@ -60,8 +60,8 @@ Skip this section when the change has no UI code.
   the stored data inconsistent
 - A schema or stored-format change with no migration for data already
   written by an earlier version
-- Serialisation that silently drops or defaults a field it does not
-  recognise, losing data on a round trip
+- Serialization that silently drops or defaults a field it does not
+  recognize, losing data on a round trip
 
 ## Language idioms
 

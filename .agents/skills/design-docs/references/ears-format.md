@@ -12,7 +12,9 @@
 | Unwanted behaviour | `If [unwanted condition], then the system shall [response].` | Error handling, failure modes, any condition the system must respond to but should not normally meet |
 | Ubiquitous | `The system shall [action].` | Invariant behaviour with no trigger |
 
-Default to **event-driven** unless the project's `AGENTS.md` says otherwise; switch only when it fits awkwardly.
+When the project's `AGENTS.md` *EARS spec format* section lists the pattern forms it uses, those replace this table for new specs, so the project's house style holds (for example `If [condition], the system shall [response].` with no "then").
+
+Default to **event-driven** unless `AGENTS.md` says otherwise; switch only when it fits awkwardly.
 
 ## Spec ID format
 

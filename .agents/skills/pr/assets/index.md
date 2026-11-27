@@ -8,7 +8,7 @@ always applies.
 |---|---|---|---|
 | stack | `node` | `package.json` at the repo root (covers TypeScript, React, Astro and other Node toolchains) | a *What changed* line naming where each new dependency's check is recorded |
 | field | `accessibility` | AGENTS.md has accessibility rules (a section, or WCAG named) | keyboard-only and screen-reader manual check lines |
-| field | `i18n` | the project ships more than one locale, or AGENTS.md has localisation rules (translation files, no hard-coded strings) | every-locale and second-locale check line |
+| field | `i18n` | the project ships more than one locale, or AGENTS.md has localization rules (translation files, no hard-coded strings) | every-locale and second-locale check line |
 | field | `frontend-ui` | the project has a user interface with a theme or design tokens, or AGENTS.md has layout or theming rules | widths and both-themes check lines |
 | field | `web-site` | the project is a public web site with rules for search, links, product claims or a performance budget (a web *app* without them doesn't qualify) | browser check line |
 | field | `generated-artifacts` | build outputs are committed alongside their sources (whatever AGENTS.md calls them) | outputs-committed and conditional-regeneration check lines |

@@ -1,11 +1,13 @@
 ---
 name: doc-audit-full
-description: "Bring the documentation back in line with the code: doc comments on public API, stale spec tags and LLD or HLD sections, READMEs and guides, Mermaid diagrams, and, only with --fix-skills, the skill files. Edits files across the repository, then commits and opens a PR, unless it runs inside a larger task. Use when the docs have drifted, after an audit, or when part of the codebase needs its docs written. Not for a report only (/doc-audit) or new design work (/design-docs). Generic copy: if a project skill named `doc-audit-full` is also listed, use that one instead."
+description: "Bring the documentation back in line with the code: doc comments on public API, stale spec tags and LLD or HLD sections, READMEs and guides, Mermaid diagrams, and, only with --fix-skills, the skill files. Edits files across the repository, then commits and opens a draft PR, unless it runs inside a larger task. Use when the docs have drifted, after an audit, or when part of the codebase needs its docs written. Not for a report only (/doc-audit) or new design work (/design-docs). Generic copy: if a project skill named `doc-audit-full` is also listed, use that one instead."
 allowed-tools:
   - Bash(${CLAUDE_SKILL_DIR}/../_shared/scripts/spec-ids.sh *)
 ---
 
 You fix doc comments, update design docs, repair Mermaid diagrams, and keep the Arrow of Intent chain (HLD → LLDs → EARS specs → Tests → Code) accurate. Every run starts with the `/doc-audit` audit, then applies the requested fixes.
+
+Read the project's `AGENTS.md` first. Where it states its own documentation or Arrow of Intent rules, they decide the fixes below; these steps are the default where it says nothing. Find each section by what it holds, not its exact title.
 
 ## Project facts
 
@@ -45,7 +47,7 @@ Run `/doc-audit` (its `--review`) and report its findings; it loads its own asse
 
 1. Load [../_shared/code-doc-conventions.md](../_shared/code-doc-conventions.md); take the syntax from the *Code comments* section of the loaded stack asset.
 2. Add or update doc comments only on public API where the contract is non-obvious:
-   - Imperative summary sentence.
+   - One summary sentence that states the contract, in the voice the conventions file gives.
    - Document parameters and return values as short fragments.
    - No trailing periods on fragments. Mark identifiers the way the stack asset says.
    - Remove doc comments from trivial getters, test helpers, and generated code.
@@ -119,7 +121,7 @@ For each `SKILL.md` in `.agents/skills/`, leaving every facts block (`<!-- facts
 
 2. **Progressive disclosure** — if the file exceeds 500 lines or holds large inline reference blocks: extract them to `references/<topic>.md` or `assets/<template>.md` with a conditional load instruction (`"load references/X.md if [condition]"`), never a bare "see references/".
 
-3. **Calibration** — where 3+ equivalent options have no clear default: pick the best default and relegate alternatives to a one-line note. Replace declaration-style output specs with a reusable procedure where the task class generalises.
+3. **Calibration** — where 3+ equivalent options have no clear default: pick the best default and relegate alternatives to a one-line note. Replace declaration-style output specs with a reusable procedure where the task class generalizes.
 
 4. **Frontmatter** — add missing required fields. Check `disable-model-invocation` against the project's invocation-gating table (in `AGENTS.md`, then `docs/dev/skills.md`) and report any skill whose flag differs; with no such table, skip this check and say so in the summary. Never add or remove the flag yourself: opening a skill to model invocation is a recorded decision, not a style fix. Add or complete `allowed-tools` with specific `Bash(pattern *)` entries. Flag model mismatches (see the calibration table in the reference).
 
@@ -135,5 +137,6 @@ Load [../_shared/code-doc-conventions.md](../_shared/code-doc-conventions.md) fo
 
 ## rules
 
-- When the edits are done, print the summary, then run `/commit-and-pr`, or `/commit` when the branch already has an open PR: the developer reviews the change in the PR. When this run is a step of a larger task (a coordinator's brief, another skill), leave committing to that task.
+- Every edit traces to a finding of the `--review` pass, or to a gap that pass lists (for `--fix-comments` and `--fix-skills`, to a breach of the conventions file or best-practices reference they load); change nothing it did not report.
+- When the edits are done, print the summary, then run `/commit` and `/pr --draft`, or `/commit` alone when the branch already has an open PR: the draft lets the developer review the change and decide when it is ready for others. When this run is a step of a larger task (a coordinator's brief, another skill), leave committing to that task.
 - Do not document generated code: the next generation run overwrites it.
