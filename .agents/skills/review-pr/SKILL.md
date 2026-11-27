@@ -145,8 +145,9 @@ gates and the fixture link. Record each gate in Verification as
 step 6 applies the documentation categories in place of the code ones.
 
 Otherwise run every *gates* command, in order, in `<wt>`, in check-only mode
-wherever a gate would otherwise rewrite files (the loaded stack asset's
-*Gates* section names it): the review never changes the PR's files. Also run
+wherever a gate would otherwise rewrite files (the check form of the
+project's own format command, on the same paths; the loaded stack asset's
+*Gates* section names the usual one): the review never changes the PR's files. Also run
 any guard script AGENTS.md lists among its checks.
 
 Each gate's real result goes in the **Verification** section (step 11).
@@ -177,16 +178,16 @@ those tests run rather than skip silently; record any skips in Verification.
    ```
    Extract acceptance criteria from the body **and every comment** equally (comments often add requirements or edge cases later): `- [ ]` task-list items and content under "Acceptance criteria", "Done when", or "Requirements" headers. These are the ticket requirements the diff must satisfy. Skip if the PR body has no issue references.
 
-   **5a. Read the contracts the diff touches** — they are rarely in the changed file. Before analysing, for every changed public symbol (class, function, method, interface, state holder, repository, database table or schema), read in the worktree:
+   **5a. Read the contracts the diff touches** — they are rarely in the changed file. Before analyzing, for every changed public symbol (class, function, method, interface, state holder, repository, database table or schema), read in the worktree:
    - its declaration and the interface or abstract type it implements
    - its callers — `git -C <wt> grep -n '<symbol>'` — enough to know what they pass in and rely on coming back
    - the LLD section and the `docs/specs/EARS-<subsystem>.md` specs for the subsystem it belongs to
 
    A loaded field asset's *Review checks* section may name more to read for its kind of change. Judge the change against these, not against the diff alone.
 
-## phase 2 — analyse
+## phase 2 — analyze
 
-6. Analyse across these categories:
+6. Analyze across these categories:
 
    - **Ticket conformance** — for each issue fetched in step 5, check the diff against every acceptance criterion; a criterion with no corresponding change is a gap, at least **High** on a `Closes #N` PR. If the LLD/spec the diff implements has itself drifted from the ticket's requirements, flag that too.
    - **Arrow of Intent** — code changes without an upstream spec or LLD; `@spec` tags pointing to missing specs; tests that implement spec behaviour but carry no `@spec` tag; HLD or LLD not updated to reflect the change

@@ -6,7 +6,7 @@ The *Setup* and *Re-run* sections of [../../../_shared/assets/stack/flutter.md](
 
 ## Gates
 
-- Formatter in check mode: `dart format --output=none --set-exit-if-changed .`
+- Formatter in check mode: `dart format --output=none --set-exit-if-changed <paths>`, on the paths the project's format gate or *format fix* fact names (usually `.`).
 - The analyzer gate is `dart analyze`, not `flutter analyze`: only `dart analyze` runs analyzer plugins (custom lint rules such as `riverpod_lint`). Use the flags the *gates* fact gives (`--fatal-infos`, for example).
 
 ## Review checks

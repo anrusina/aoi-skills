@@ -6,7 +6,7 @@ Never staged: `.dart_tool/`, `build/`, `.flutter-plugins`, `.flutter-plugins-dep
 
 ## Quality gates
 
-- Format fix: `dart format .` (it writes; `dart format --set-exit-if-changed .` is the checking form).
+- Format fix, when the *format fix* fact is none: usually `dart format .` (it writes; `dart format --set-exit-if-changed .` is the checking form). A project that formats only some folders names them in the fact, and the fact wins.
 - Suppression forms, never added on your own initiative: `// ignore: <rule>`, `// ignore_for_file: <rule>`, and a rule set to `false` or a path under `analyzer: exclude:` in `analysis_options.yaml`.
 
 ## Dependency registry

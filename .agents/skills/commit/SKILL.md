@@ -50,7 +50,7 @@ its rule from there.
 
 ## input
 
-`$ARGUMENTS`: a commit hash (analyse that commit only), `--squash` to fold the branch's unpushed commits into one (step 10), `--no-push` to commit without pushing, or empty for the full workflow.
+`$ARGUMENTS`: a commit hash (analyze that commit only), `--squash` to fold the branch's unpushed commits into one (step 10), `--no-push` to commit without pushing, or empty for the full workflow.
 
 ## step 1 — inspect changes
 
@@ -139,7 +139,7 @@ If **every** changed path is Markdown or under `docs/` (no source file, manifest
 
 Otherwise, apply the *Before the gates* section of each loaded asset, then run the gates in order (or the one command that runs them all). Never guess the commands: if AGENTS.md lists none, ask once, as *Project facts* says.
 
-- If a format gate rewrites files, re-stage them (`git add <path>...`). If it only checks and fails, run the format fix (the loaded stack asset's *Quality gates* section names the usual one), re-stage, and run the gates again.
+- If a format gate rewrites files, re-stage them (`git add <path>...`). If it only checks and fails, run the *format fix* fact's command (only when the fact is none, the loaded stack asset's *Quality gates* section names the usual one), re-stage, and run the gates again.
 - Any lint/analyze finding → show full output, stop. If AGENTS.md says warnings or infos block, they block exactly as errors do.
   Fix the code. Never add a rule exclusion or inline suppression (the stack asset's *Quality gates* section lists the forms) on your own initiative: that is a decision about the rule, not a way past the gate. If one looks genuinely warranted, stop, put the case for excluding versus fixing to the developer, and wait for approval.
 - Any test failure → show full output, stop.
@@ -180,7 +180,7 @@ history at merge time), and only with more than one unpushed commit:
 - Branch has remote tracking: `git reset --soft origin/<branch>`
 - No remote yet: `git reset --soft "$(git merge-base HEAD origin/<base>)"`
 
-Compose a combined message: subject from the most recent commit, `Work done:` synthesised across all squashed commits (group by concern, include `@spec` IDs). Commit it as in step 9 and show the message.
+Compose a combined message: subject from the most recent commit, `Work done:` synthesized across all squashed commits (group by concern, include `@spec` IDs). Commit it as in step 9 and show the message.
 
 **Push** without a prompt, unless `--no-push` is in `$ARGUMENTS`.
 - New branch (no remote tracking): `git push -u origin <branch>`

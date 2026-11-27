@@ -82,6 +82,11 @@ AUTH-001: When a user submits invalid credentials, the system shall show an erro
 CART-002: When a user removes the last item from the cart, the system shall show the empty-cart state.
 ```
 
+{Optional: list the EARS pattern forms this project uses, each with its
+sentence (e.g. `If [condition], the system shall [response].` for unwanted
+behaviour). A list here replaces the skills' default forms for new specs;
+without one, /design-docs uses the standard EARS forms.}
+
 Tests carry the spec ID (see *Testing*).
 
 ### Scope-boundary notes
@@ -132,8 +137,9 @@ same formatter without its check flag); `/commit` uses it to fix formatting
 and re-run the gate.}
 
 {If tools must run through a wrapper — a version manager's exec command, a
-container — say so here; the skills run the gates and the tools it provides
-through it, and everything else bare.}
+container — say so here; the skills put it in front of a command only when
+its first word is a tool it provides, and run a target whose recipe calls it
+(`make check`), the wrapper's own tool and plain `git` as written.}
 
 ### Worktree setup (optional)
 
@@ -146,8 +152,11 @@ each new worktree and again after a rebase.
 ## Pre-merge checks (optional)
 
 Checks `/pre-merge` runs after the rebase, beyond the quality gates: slow or
-fixture-based test suites, a clean-checkout CI-equivalent run, a version bump,
-release notes. List each with its command and when it applies.
+fixture-based test suites, a workflow that starts by itself when certain paths
+change, a clean-checkout CI-equivalent run, a version bump (with the files it
+writes, and its level rule if not the default: minor for a `feature-` branch
+or a `feat:` commit, patch otherwise), release notes. List each with its
+command and when it applies.
 
 ---
 
