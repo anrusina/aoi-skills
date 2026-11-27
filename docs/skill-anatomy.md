@@ -86,8 +86,12 @@ project's profile):
 rule unchanged instead of writing a value.
 
 `wrapper` is applied as its row says, not per command: the body names no
-wrapper. Plain `git` and `gh` stay unwrapped so they match `allowed-tools`,
-unless the version manager's config lists `gh`.
+wrapper. It goes in front of a command only when the command's first word is
+a tool the wrapper provides, so a `make` target whose recipe calls the
+wrapper, the wrapper's own tool, and plain `git` and `gh` (unless the version
+manager's config lists `gh`) run as written and match `allowed-tools`.
+`/setup-skills` writes each gate, format-fix and setup command into
+`allowed-tools` by the same rule, without any trailing `# …` note.
 
 ### Project form
 
@@ -168,9 +172,9 @@ has one right answer.
 | `_shared/scripts/worktree.sh` | start-task, review-pr, pre-merge, coding-master | add, move and remove worktrees under the primary checkout's `.claude/worktrees/` |
 | `_shared/scripts/spec-ids.sh` | arrow-check, start-task, pre-merge, pr, doc-audit, doc-audit-full | defined EARS IDs (table or line form), duplicates, `@spec` tags, orphans, tags added on a branch |
 | `review-round.sh` | review-pr | resolve the PR and decide between a full and a follow-up round |
-| `rebuild.sh`, `ci-run.sh` | pre-merge | the docs-first rebuild with its content check; the CI-equivalent run |
+| `rebuild.sh`, `ci-run.sh` | pre-merge | the docs-first rebuild, one or more concerns, with its content check (`scripts/test-rebuild.sh` at the repository root checks it); the CI-equivalent run |
 | `feedback.sh` | feedback-review | new feedback since the last review, and the review timestamp |
-| `setup.sh` | setup-skills | render, lock, plan and apply an update |
+| `setup.sh` | setup-skills | render, lock, plan and apply an update; `scripts/test-setup.sh` at the repository root renders a sample profile and checks the facts blocks and `allowed-tools`, so run it after changing `setup.sh` |
 
 ## Shared files
 
